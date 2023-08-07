@@ -1,0 +1,19 @@
+{
+    "name": "Impersonation Board",
+    "description": "Clipboard manager for the Approve's Impoersonation feature",
+    "version": "1.0",
+    "manifest_version": 3,
+    "content_scripts": [{
+      "matches": ["https://*.approve.com/*", "http://localhost/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {"service_worker": "background.js"},
+    "permissions": [
+      "storage", "tabs"
+    ]
+}
