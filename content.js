@@ -33,18 +33,16 @@ function handleApprovalFlowTableImpersonation() {
 
       if (!TEST_MODE) clearInterval(intervalId); // We found the approval flow table. stop searching for it. in test-mode it lets you play with the dom and see the effects (for example, set data-email to some approvalName and see how it changes on-the-fly)
 
-      approvalFlowTableLines.childNodes.forEach(aftl => {
-        const approvalName = aftl.querySelector("span[data-email]:first-child");
-        if (!approvalName) return;
+      approvalFlowTableLines.childNodes.forEach(line => {
+        const elementWithDataEmail = line.querySelector("[data-email]");
+        if (!elementWithDataEmail) return;
 
-        const emailFromName = approvalName.dataset.email; // FYI, you could also use: aftl.getAttribute('data-email')
-        if (!emailFromName) return;
-
-        approvalName.removeAttribute("data-email"); //remove data-email! that will force emailFromName to be undefined after handling. that means: 1. if we don't have data-email, we don't care. and if we had it, but handled it, we don't care about it either (two birds at one shot).
-        approvalName.style.cursor = 'pointer';
-        approvalName.addEventListener('click', (e) => {
+        const email = elementWithDataEmail.dataset.email; // FYI, you could also use: line.getAttribute('data-email')
+        elementWithDataEmail.removeAttribute("data-email"); //remove data-email attribute. that will force elementWithDataEmail to be undefined in the next intervals. It means that we won't handle it again and waste resources (for example: register a lot of click events).
+        elementWithDataEmail.style.cursor = 'pointer';
+        elementWithDataEmail.addEventListener('click', (e) => {
           e.stopPropagation();
-          impersonate(emailFromName);
+          impersonate(email);
         }, {once: true}); // Once triggered, removing the listener.
       });
     }

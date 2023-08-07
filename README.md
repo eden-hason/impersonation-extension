@@ -1,6 +1,7 @@
 # Impersonation Chrome Extension
 
-This extension allow you to navigate betweeen yours last impersnoantion records, just like how clipboard works.
+This extension allow you to navigate between yours last impersonation records, just like how clipboard works.
+The extension will also improve the impersonation experience in the approval flow table.
 
 ### Getting Started
 1. Go to GitHub and download the repository files - https://github.com/eden-hason/impersonation-extension
@@ -8,3 +9,5 @@ This extension allow you to navigate betweeen yours last impersnoantion records,
 3. Make sure the `Developer mode` toggle is turned on (top right corner of the page)
 4. Click on `Load unpacked` button and select the downloaded repository folder location
 5. The extension is installed and ready to use, enjoy!
+
+#### Made with ❤️, from Approve ⚡️
