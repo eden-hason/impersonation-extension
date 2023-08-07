@@ -3,12 +3,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     handleCurrentImpersonation();
     return;
   }
-  const email = message.data.email;
 
-  if (!email) return;
-
-  localStorage.setItem("forceCustomer", email);
-  location.reload();
+  if (message?.data?.email) {
+    localStorage.setItem("forceCustomer", message.data.email);
+    location.reload();
+  }
 
   sendResponse();
 });
