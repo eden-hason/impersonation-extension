@@ -21,8 +21,6 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 });
 
 async function setEmailToLocalStorage(email, env) {
-  if (!email || !env) return;
-
   let emailsToStore;
 
   const result = await chrome.storage.local.get("emails");

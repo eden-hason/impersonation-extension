@@ -15,7 +15,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Send the current impersonation to background
 function handleCurrentImpersonation() {
+  const email = localStorage.getItem("forceCustomer");
   const env = parseHostnameToEnv();
+
+  if (!email || !env) return;
 
   chrome.runtime.sendMessage({
     data: {
