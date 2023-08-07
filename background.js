@@ -21,21 +21,18 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 });
 
 async function setEmailToLocalStorage(email, env) {
-  let emailsToStore;
+  const storeResult = await chrome.storage.local.get("emails");
+  const storedEmails = storeResult.emails || {};
 
-  const result = await chrome.storage.local.get("emails");
-
-  if (!result.emails?.[env]) {
-    emailsToStore = { [env]: [email] };
+  if (!storedEmails[env]) {
+    storedEmails[env] = [email];
   } else {
-    const emailsSet = new Set([email, ...result.emails[env]]);
-    emailsToStore = {
-      [env]: Array.from(emailsSet).splice(0, MAX_EMAILS_TO_STORE),
-    };
+    const emailsSet = new Set([email, ...storedEmails[env]]);
+    storedEmails[env] = Array.from(emailsSet).splice(0, MAX_EMAILS_TO_STORE);
   }
 
   chrome.storage.local.set({
     env,
-    emails: emailsToStore,
+    emails: storedEmails,
   });
 }
