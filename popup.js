@@ -5,7 +5,11 @@ emailsListElement.addEventListener("click", function (e) {
 
   chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
     var activeTab = tabs[0];
-    chrome.tabs.sendMessage(activeTab.id, { data: { email: selectedEmail } });
+    chrome.tabs.sendMessage(
+      activeTab.id,
+      { data: { email: selectedEmail } },
+      () => window.close()
+    );
   });
 });
 
