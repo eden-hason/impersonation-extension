@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener(async function (
   sender,
   sendResponse
 ) {
-  if (message.data) {
+  if (message?.data) {
     await setEmailToLocalStorage(message.data.email, message.data.env);
   }
 
@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener(async function (
 chrome.tabs.onActivated.addListener(function (activeInfo) {
   chrome.tabs.sendMessage(
     activeInfo.tabId,
-    { action: "open_dialog_box" },
+    { action: "onTabChange" },
     () => chrome.runtime.lastError
   );
 });
