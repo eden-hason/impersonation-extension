@@ -1,4 +1,4 @@
-# Impersonation Chrome Extension
+## Impersonation Chrome Extension
 
 This extension allow you to navigate between yours last impersonation records, just like how clipboard works.
 The extension will also improve the impersonation experience in the approval flow table.
