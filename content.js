@@ -1,15 +1,21 @@
 const SCAN_INTERVAL_MS = 1000; // TODO: MAKE THIS CHANGEABLE THROUGH SOME HIDDEN SETTINGS PANEL
-const TEST_MODE = true; // TODO: MAKE THIS CHANGEABLE THROUGH SOME HIDDEN SETTINGS PANEL
+const ELEMENT_STYLE = { textDecoration: "underline" };
 const MAX_EMAILS_TO_STORE = 5;
+
 let intervalId = null;
+let userOptions = {};
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   switch (message?.action) {
     case "onTabChange":
       handleCurrentImpersonation();
-    case "onTabUrlChange":
       handleApprovalFlowTableImpersonation();
+      break;
+    case "clear-all":
+      handleClearAll();
+      break;
   }
+
   if (message?.data?.email) {
     impersonate(message.data.email);
   }
@@ -23,6 +29,8 @@ function impersonate(email) {
 }
 
 function handleApprovalFlowTableImpersonation() {
+  if (!userOptions.quickImpersonate) return;
+
   if (intervalId) clearInterval(intervalId);
 
   intervalId = setInterval(() => {
@@ -30,7 +38,7 @@ function handleApprovalFlowTableImpersonation() {
       ".approval-flow-table"
     );
     if (approvalFlowTableLines) {
-      if (!TEST_MODE) clearInterval(intervalId); // We found the approval flow table. stop searching for it. in test-mode it lets you play with the dom and see the effects (for example, set data-email to some approvalName and see how it changes on-the-fly)
+      if (!userOptions.testMode) clearInterval(intervalId); // We found the approval flow table. stop searching for it. in test-mode it lets you play with the dom and see the effects (for example, set data-email to some approvalName and see how it changes on-the-fly)
 
       approvalFlowTableLines.childNodes.forEach((line) => {
         const elementWithDataEmail = line.querySelector("[data-email]");
@@ -39,6 +47,11 @@ function handleApprovalFlowTableImpersonation() {
         const email = elementWithDataEmail.dataset.email; // FYI, you could also use: line.getAttribute('data-email')
         elementWithDataEmail.removeAttribute("data-email"); //remove data-email attribute. that will force elementWithDataEmail to be undefined in the next intervals. It means that we won't handle it again and waste resources (for example: register a lot of click events).
         elementWithDataEmail.style.cursor = "pointer";
+
+        if (userOptions.style) {
+          Object.assign(elementWithDataEmail.style, ELEMENT_STYLE);
+        }
+
         elementWithDataEmail.addEventListener(
           "click",
           (e) => {
@@ -96,7 +109,22 @@ async function setEmailToLocalStorage(email, env) {
   });
 }
 
+async function handleClearAll() {
+  const storeResult = await chrome.storage.local.get("emails");
+  const storedEmails = storeResult.emails || {};
+  const env = parseHostnameToEnv();
+
+  storedEmails[env] = null;
+
+  chrome.storage.local.set({
+    emails: storedEmails,
+  });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
-  handleApprovalFlowTableImpersonation();
-  handleCurrentImpersonation();
+  chrome.storage.sync.get("options", (res) => {
+    userOptions = res.options;
+    handleApprovalFlowTableImpersonation();
+    handleCurrentImpersonation();
+  });
 });

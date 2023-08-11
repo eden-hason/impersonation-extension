@@ -1,42 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <title>My Extension</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+      crossorigin="anonymous"
+    />
 
     <style>
-        body {
-            padding: 16px 16px 8px 16px;
-            width: 350px;
-        }
+      body {
+        padding: 16px 16px 8px 16px;
+        width: 350px;
+      }
 
-        .list-group-item-action {
-            font-size: 12px;
-            padding-left: 0;
-        }
+      .list-group-item-action {
+        font-size: 12px;
+        padding-left: 0;
+      }
 
-        p {
-            font-size: 12px;
-        }
+      p {
+        font-size: 12px;
+      }
 
-        #version-button {
-            display: block;
-            font-size: 10px;
-            text-align: center;
-            cursor: pointer;
-            margin-top: 8px;
-        }
+      #version-button {
+        display: block;
+        font-size: 10px;
+        text-align: center;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+
+      .highlight-link {
+        color: red;
+      }
+
+      .btn {
+        margin-top: 8px;
+        border: none;
+        display: flex;
+      }
+
+      .buttons-wrapper {
+        display: flex;
+      }
+
+      .button-icon {
+        margin-right: 8px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h6>Impersonation Pal</h6>
-    <p>The last emails used to impersonate, click on any option to re-impersonate again</p>
+    <p style="margin-bottom: 8px">
+      The last emails used to impersonate, click on any option to re-impersonate
+      again
+    </p>
 
-    <div class="list-group list-group-flush" id="emails-list">
+    <div class="list-group list-group-flush" id="emails-list"></div>
+
+    <div class="buttons-wrapper">
+      <button
+        type="button"
+        id="clear-all-button"
+        class="btn btn-outline-danger"
+        style="
+          --bs-btn-padding-y: 0.25rem;
+          --bs-btn-padding-x: 0.5rem;
+          --bs-btn-font-size: 0.75rem;
+        "
+      >
+        <svg
+          class="button-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="currentColor"
+          class="bi bi-trash3"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"
+          />
+        </svg>
+        Clear all
+      </button>
+
+      <button
+        type="button"
+        id="options-button"
+        class="btn btn-outline-primary"
+        style="
+          --bs-btn-padding-y: 0.25rem;
+          --bs-btn-padding-x: 0.5rem;
+          --bs-btn-font-size: 0.75rem;
+        "
+      >
+        <svg
+          class="button-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="currentColor"
+          class="bi bi-box-arrow-up-right"
+          viewBox="0 0 16 16"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"
+          />
+          <path
+            fill-rule="evenodd"
+            d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"
+          />
+        </svg>
+        Settings
+      </button>
     </div>
 
-    <span id="version-button" data-bs-toggle="modal" data-bs-target="#myModal">version 1.0</span>
-
     <script src="popup.js"></script>
-</body>
+  </body>
 </html>

@@ -8,10 +8,16 @@ async function renderList() {
 
   const emailsListElement = document.getElementById("emails-list");
 
-  if (!emails[env]) return;
-
-  const buttonsElements = emails[env].map(getButtonElement);
-  emailsListElement.append(...buttonsElements);
+  if (!emails[env]) {
+    const foo = document.createElement("span");
+    foo.style.fontStyle = "italic";
+    foo.style.fontSize = "12px";
+    foo.innerText = "No records to show";
+    emailsListElement.append(foo);
+  } else {
+    const buttonsElements = emails[env].map(getButtonElement);
+    emailsListElement.append(...buttonsElements);
+  }
 }
 
 function getButtonElement(email) {
@@ -22,6 +28,18 @@ function getButtonElement(email) {
   button.innerText = email;
 
   return button;
+}
+
+async function handleClearAllButtonDispaly() {
+  const emailsResult = await chrome.storage.local.get("emails");
+  const envResult = await chrome.storage.local.get("env");
+
+  const emails = emailsResult.emails;
+  const env = envResult.env;
+
+  if (!emails[env]) {
+    clearAllElement.style.display = "none";
+  }
 }
 
 // Handle list item click
@@ -40,14 +58,26 @@ emailsListElement.addEventListener("click", function (e) {
   });
 });
 
-// Handle version container click
-const versionButtonElement = document.getElementById("version-button");
+// Handle clear all button click
+const clearAllElement = document.querySelector("#clear-all-button");
 
-versionButtonElement.addEventListener("click", function () {
-  alert("Version 1.0 \n Eden Hason & Hen Tzarfati");
+clearAllElement.addEventListener("click", function () {
+  chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, { action: "clear-all" }, () =>
+      window.close()
+    );
+  });
 });
+
+// Handle options button click
+const optionsButtonElement = document.querySelector("#options-button");
+
+optionsButtonElement.addEventListener("click", () =>
+  chrome.runtime.openOptionsPage()
+);
 
 // Handle page load
 document.addEventListener("DOMContentLoaded", function () {
   renderList();
+  handleClearAllButtonDispaly();
 });
