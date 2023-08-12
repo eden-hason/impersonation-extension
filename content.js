@@ -8,7 +8,10 @@ let userOptions = {};
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   switch (message?.action) {
     case "onTabChange":
-      handleCurrentImpersonation();
+      // handleCurrentImpersonation();
+      handleEnvChange();
+      break;
+    case "onTabUrlChange":
       handleApprovalFlowTableImpersonation();
       break;
     case "clear-all":
@@ -22,6 +25,11 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
   sendResponse();
 });
+
+function handleEnvChange() {
+  const env = parseHostnameToEnv();
+  chrome.storage.local.set({ env });
+}
 
 function impersonate(email) {
   localStorage.setItem("forceCustomer", email);
