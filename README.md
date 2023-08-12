@@ -11,4 +11,5 @@ The extension will also improve the impersonation experience in the approval flo
 4. Click on `Load unpacked` button and select the downloaded repository folder location
 5. The extension is installed and ready to use, enjoy!
 
+##
 #### Made with &#128155; from Approve ⚡️
