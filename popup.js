@@ -7,16 +7,19 @@ async function renderList() {
   const env = envResult.env;
 
   const emailsListElement = document.getElementById("emails-list");
-
+  const emptyListElement = document.getElementById("empty-emails-list");
+console.log("emails[env]",emails[env]);
   if (!emails[env]) {
-    const foo = document.createElement("span");
-    foo.style.fontStyle = "italic";
-    foo.style.fontSize = "12px";
-    foo.innerText = "No records to show";
-    emailsListElement.append(foo);
+    const noRecordsElement = document.createElement("span");
+    noRecordsElement.style.fontStyle = "italic";
+    noRecordsElement.style.fontSize = "12px";
+    noRecordsElement.innerText = "No records to show";
+    emptyListElement.append(noRecordsElement);
+    emailsListElement.innerHTML = '';
   } else {
     const buttonsElements = emails[env].map(getButtonElement);
     emailsListElement.append(...buttonsElements);
+    emptyListElement.innerHTML = '';
   }
 }
 
