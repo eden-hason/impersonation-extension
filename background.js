@@ -8,8 +8,12 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   if (changeInfo.url) {
-    chrome.tabs.sendMessage(tabId, {
-      action: "onTabUrlChange",
-    });
+    chrome.tabs.sendMessage(
+      tabId,
+      {
+        action: "onTabUrlChange",
+      },
+      () => chrome.runtime.lastError
+    );
   }
 });
