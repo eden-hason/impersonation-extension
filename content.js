@@ -8,18 +8,18 @@ let userOptions = {};
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   switch (message?.action) {
     case "onTabActivate":
-      handleEnvChange();
+      await handleEnvChange();
       break;
     case "onTabUrlChange":
       handleApprovalFlowTableImpersonation();
       break;
     case "onImpersonate":
       if (message?.data?.email) {
-        handleImpersonate(message.data.email);
+        await handleImpersonate(message.data.email);
       }
       break;
     case "onClearRecentImpersonations":
-      handleClearRecentImpersonations();
+      await handleClearRecentImpersonations();
       break;
   }
 
@@ -54,8 +54,9 @@ async function handleEnvChange() {
   await chrome.storage.local.set({ env });
 }
 
-function handleImpersonate(email) {
+async function handleImpersonate(email) {
   localStorage.setItem("forceCustomer", email);
+  await handleCurrentImpersonation();
   location.reload();
 }
 
@@ -85,9 +86,9 @@ function handleApprovalFlowTableImpersonation() {
 
         elementWithDataEmail.addEventListener(
           "click",
-          (e) => {
+          async (e) => {
             e.stopPropagation();
-            handleImpersonate(email);
+            await handleImpersonate(email);
           },
           { once: true }
         ); // Once triggered, removing the listener.
@@ -96,13 +97,13 @@ function handleApprovalFlowTableImpersonation() {
   }, SCAN_INTERVAL_MS);
 }
 
-function handleCurrentImpersonation() {
+async function handleCurrentImpersonation() {
   const email = localStorage.getItem("forceCustomer");
   const env = parseHostnameToEnv();
 
   if (!email || !env) return;
 
-  setEmailToLocalStorage(email, env);
+  await setEmailToLocalStorage(email, env);
 }
 
 function parseHostnameToEnv(_hostname) {
@@ -138,9 +139,9 @@ async function handleClearRecentImpersonations() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  chrome.storage.sync.get("options", (res) => {
+  chrome.storage.sync.get("options", async (res) => {
     userOptions = res.options;
     handleApprovalFlowTableImpersonation();
-    handleCurrentImpersonation();
+    await handleCurrentImpersonation(); // TODO: Can do another mechanisem? something that listen to the impersonate modal event firing? this way we could keep the recent impersonate list really empty all the time until someone really doing impersonation
   });
 });

@@ -17,7 +17,8 @@
     "permissions": [
       "storage", "tabs", "activeTab"
     ],
-     "icons": {
+  "host_permissions": ["*://*/*"],
+  "icons": {
     "16": "icons/icon_32.png",
     "32": "icons/icon_32.png",
     "48": "icons/icon_32.png",

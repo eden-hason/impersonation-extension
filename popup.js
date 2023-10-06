@@ -15,19 +15,46 @@ function closePopup() {
 }
 
 async function renderPopup() {
-  await renderList();
+  await renderCategories();
+  await renderRecentImpersonations();
   await handleClearRecentImpersonationsDispaly();
 }
 
-function onClickImpersonate(email) {
+const onClickImpersonate = (email) => {
   chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-    var activeTab = tabs[0];
     chrome.tabs.sendMessage(
-        activeTab.id,
-        { data: { email, action: "onImpersonate" } },
-        () => closePopup()
+        tabs[0].id,
+        { data: { email: email }, action: "onImpersonate" },
+        async () => await renderPopup() // TODO: also close the popup? if closing, we dont need to renderPopup()
     );
   });
+}
+
+async function renderCategories() {
+  const envStore = await getEnvStore();
+  const categories = envStore.categories;
+
+  const categoriesElement = document.getElementById("categories");
+  categoriesElement.innerHTML = "";
+
+  for (const [key, value] of Object.entries(categories)) {
+    if (value.length > 0) {
+      const categoryName = key;
+      const emailsButtons = buildCategoryImpersonationsButtons(value);
+      categoriesElement.append(categoryName);
+      categoriesElement.append(...emailsButtons);
+    }
+  }
+}
+
+function buildCategoryImpersonationsButtons(emails) {
+  return emails.map(email => {
+    return getCategoryImpersonationButtonElement(email);
+  });
+}
+
+function buildRecentImpersonationsButtons(emails) {
+  return emails.map(getRecentImpersonationButtonElement);
 }
 
 function buildEmptyRecentImpersonations() {
@@ -38,11 +65,8 @@ function buildEmptyRecentImpersonations() {
   return noRecordsElement;
 }
 
-function buildRecentImpersonationsButtons(emails) {
-  return emails.map(getButtonElement);
-}
 
-async function renderList() {
+async function renderRecentImpersonations() {
   const envStore = await getEnvStore();
   const emails = envStore.recentImpersonations;
 
@@ -58,16 +82,50 @@ async function renderList() {
   }
 }
 
-function getButtonElement(email) {
+function getCategoryImpersonationButtonElement(email) {
   const button = document.createElement("button");
 
   button.setAttribute("type", "button");
   button.setAttribute("class", "list-group-item list-group-item-action");
   button.innerText = email;
   button.onclick = (evt) => {
-    const selectedEmail = evt.target.innerText;
-    onClickImpersonate(selectedEmail)
+    evt.stopPropagation();
+    onClickImpersonate(email)
   }
+
+  return button;
+}
+
+function onClickSaveRecentImpersonation(email) {
+  alert("TODO: Save to categories logic. remove from recents after. email to save: " + email);
+}
+
+function getRecentImpersonationButtonElement(email) {
+  const button = document.createElement("button");
+  button.setAttribute("type", "button");
+  button.setAttribute("class", "list-group-item list-group-item-action");
+  button.style.display = 'flex';
+  button.style.justifyContent = 'space-between';
+
+  const emailElement = document.createElement('div');
+  emailElement.innerText = email;
+
+  button.onclick = (evt) => {
+    evt.stopPropagation();
+    onClickImpersonate(email);
+  }
+
+  button.append(emailElement);
+
+  const saveImpersonationElement = document.createElement('div');
+  saveImpersonationElement.innerText = "Save";
+
+  saveImpersonationElement.onclick = (evt) => {
+    evt.stopPropagation();
+    onClickSaveRecentImpersonation(email);
+  }
+
+  button.append(saveImpersonationElement);
 
   return button;
 }
