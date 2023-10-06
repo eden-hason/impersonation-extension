@@ -7,31 +7,54 @@ let userOptions = {};
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   switch (message?.action) {
-    case "onTabChange":
-      // handleCurrentImpersonation();
+    case "onTabActivate":
       handleEnvChange();
       break;
     case "onTabUrlChange":
       handleApprovalFlowTableImpersonation();
       break;
-    case "clear-all":
-      handleClearAll();
+    case "onImpersonate":
+      if (message?.data?.email) {
+        handleImpersonate(message.data.email);
+      }
       break;
-  }
-
-  if (message?.data?.email) {
-    impersonate(message.data.email);
+    case "onClearRecentImpersonations":
+      handleClearRecentImpersonations();
+      break;
   }
 
   sendResponse();
 });
 
-function handleEnvChange() {
-  const env = parseHostnameToEnv();
-  chrome.storage.local.set({ env });
+const defaultEnvStore = () => {
+  return {
+    categories: {
+      uncategorized: [],
+    },
+    recentImpersonations: []
+  }
 }
 
-function impersonate(email) {
+const getEnvStore = async () => {
+  const env = parseHostnameToEnv();
+  return (await chrome.storage.local.get(env))?.[env] || defaultEnvStore();
+}
+
+const setEnvStore = async (data) => {
+  const env = parseHostnameToEnv();
+  const envStore = await getEnvStore();
+  const envData = {...envStore, ...data}
+  await chrome.storage.local.set({
+    [env]: envData,
+  });
+}
+
+async function handleEnvChange() {
+  const env = parseHostnameToEnv();
+  await chrome.storage.local.set({ env });
+}
+
+function handleImpersonate(email) {
   localStorage.setItem("forceCustomer", email);
   location.reload();
 }
@@ -64,7 +87,7 @@ function handleApprovalFlowTableImpersonation() {
           "click",
           (e) => {
             e.stopPropagation();
-            impersonate(email);
+            handleImpersonate(email);
           },
           { once: true }
         ); // Once triggered, removing the listener.
@@ -93,6 +116,8 @@ function parseHostnameToEnv(_hostname) {
     env = "sandbox";
   } else if (splitHostname.includes("localhost")) {
     env = "local";
+  } else if (splitHostname.includes("rc")) {
+    env = "rc";
   } else {
     env = "production";
   }
@@ -100,33 +125,16 @@ function parseHostnameToEnv(_hostname) {
   return env;
 }
 
-async function setEmailToLocalStorage(email, env) {
-  const storeResult = await chrome.storage.local.get("emails");
-  const storedEmails = storeResult.emails || {};
-
-  if (!storedEmails[env]) {
-    storedEmails[env] = [email];
-  } else {
-    const emailsSet = new Set([email, ...storedEmails[env]]);
-    storedEmails[env] = Array.from(emailsSet).splice(0, MAX_EMAILS_TO_STORE);
-  }
-
-  chrome.storage.local.set({
-    env,
-    emails: storedEmails,
-  });
+async function setEmailToLocalStorage(email) {
+  const envStore = await getEnvStore();
+  const prevRecentImpersonations = envStore.recentImpersonations || [];
+  const uniqRecentImpersonations = new Set([email, ...prevRecentImpersonations]);
+  const recentImpersonations = Array.from(uniqRecentImpersonations).splice(0, MAX_EMAILS_TO_STORE);
+  await setEnvStore({recentImpersonations});
 }
 
-async function handleClearAll() {
-  const storeResult = await chrome.storage.local.get("emails");
-  const storedEmails = storeResult.emails || {};
-  const env = parseHostnameToEnv();
-
-  storedEmails[env] = null;
-
-  chrome.storage.local.set({
-    emails: storedEmails,
-  });
+async function handleClearRecentImpersonations() {
+  await setEnvStore({recentImpersonations: []});
 }
 
 document.addEventListener("DOMContentLoaded", function () {
