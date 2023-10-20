@@ -28,9 +28,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
 const defaultEnvStore = () => {
   return {
-    categories: {
-      uncategorized: [],
-    },
+    categories: {},
     recentImpersonations: []
   }
 }
@@ -97,11 +95,29 @@ function handleApprovalFlowTableImpersonation() {
   }, SCAN_INTERVAL_MS);
 }
 
+async function isEmailExists(email) {
+  // TODO: Control through the settings (the way email added to the recent impersonations list)
+  //const envStore = await getEnvStore();
+
+  // If we check recentImpersonation here, if the email was already in recentImpersonation it will not pop to the top..
+  // const recentImpersonationEmails = envStore.recentImpersonations || [];
+  // const isEmailExistInRecentImpersonation = recentImpersonationEmails.some(rie => rie === email);
+  // if (isEmailExistInRecentImpersonation) return true;
+
+  // We don't save email that already saved to some category to the recentImpersonation list
+  // const categories = envStore.categories || {};
+  // for (const category in categories) {
+  //   const categoryEmails = categories[category] || [];
+  //   const isEmailExistInCategory = categoryEmails.some(ce => ce === email);
+  //   if (isEmailExistInCategory) return true;
+  // }
+  return false;
+}
+
 async function handleCurrentImpersonation() {
   const email = localStorage.getItem("forceCustomer");
   const env = parseHostnameToEnv();
-
-  if (!email || !env) return;
+  if (!email || !env || await isEmailExists(email)) return;
 
   await setEmailToLocalStorage(email, env);
 }

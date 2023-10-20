@@ -10,6 +10,15 @@ async function getEnvStore() {
   return envStore;
 }
 
+const setEnvStore = async (data) => {
+  const env = await getEnvironment();
+  const envStore = await getEnvStore();
+  const envData = {...envStore, ...data}
+  await chrome.storage.local.set({
+    [env]: envData,
+  });
+}
+
 function closePopup() {
   window.close();
 }
@@ -32,17 +41,39 @@ const onClickImpersonate = (email) => {
 
 async function renderCategories() {
   const envStore = await getEnvStore();
-  const categories = envStore.categories;
+  const categories = envStore.categories || {};
 
   const categoriesElement = document.getElementById("categories");
   categoriesElement.innerHTML = "";
+  categoriesElement.style.display = 'none';
+
+  const isCategoriesExists = Object.keys(categories)?.length > 0;
+  if (isCategoriesExists) categoriesElement.style.display = 'block';
+
+  const categoriesTitleElement = document.createElement("div");
+  categoriesTitleElement.innerText = "Saved Impersonations";
+  categoriesTitleElement.style.textAlign = 'center';
+  categoriesTitleElement.style.marginBottom = '5px';
+  categoriesTitleElement.style.paddingBottom = '2px';
+  categoriesTitleElement.style.paddingTop = '2px';
+  categoriesTitleElement.style.borderBottom = '1px solid black';
+  categoriesTitleElement.style.borderTop = '1px solid black';
+  categoriesElement.append(categoriesTitleElement);
 
   for (const [key, value] of Object.entries(categories)) {
     if (value.length > 0) {
-      const categoryName = key;
+      const categoryWrapperElement = document.createElement("div");
+      categoryWrapperElement.classList.add('list-group', 'list-group-flush');
+      categoryWrapperElement.style.marginTop = '10px';
+
+      const categoryNameElement = document.createElement("div");
+      categoryNameElement.innerText = `${key}:`;
+      categoryWrapperElement.append(categoryNameElement);
+
       const emailsButtons = buildCategoryImpersonationsButtons(value);
-      categoriesElement.append(categoryName);
-      categoriesElement.append(...emailsButtons);
+      categoryWrapperElement.append(...emailsButtons);
+
+      categoriesElement.append(categoryWrapperElement);
     }
   }
 }
@@ -96,8 +127,54 @@ function getCategoryImpersonationButtonElement(email) {
   return button;
 }
 
-function onClickSaveRecentImpersonation(email) {
-  alert("TODO: Save to categories logic. remove from recents after. email to save: " + email);
+async function isEmailExistsInSomeCategory(email) {
+  const envStore = await getEnvStore();
+  const categories = envStore.categories || {};
+  alert(JSON.stringify(categories));
+  for (const category in categories) {
+    alert(category);
+    const categoryEmails = categories[category] || [];
+    alert(categoryEmails.join(','));
+    const isEmailExistInCategory = categoryEmails.some(ce => ce === email);
+    if (isEmailExistInCategory) return true;
+  }
+
+  return false;
+}
+
+async function getCategoryEmails(category) {
+  const envStore = await getEnvStore();
+  const categories = envStore.categories || {};
+  return categories[category] || [];
+}
+
+async function setCategoryEmails(category, emails) {
+  const envStore = await getEnvStore();
+  const categories = envStore.categories || {};
+  await setEnvStore({categories: {...categories, [category]: emails}});
+}
+
+async function isEmailExistsInCategory(category, email) {
+  const categoryEmails = await getCategoryEmails(category);
+  return categoryEmails.some(ce => ce === email);
+}
+
+
+async function onClickSaveRecentImpersonation(email) {
+  const categoryInput = prompt(`Save "${email}" to category`, email.split('@')[1]);
+  if (!categoryInput) return;
+
+  const isEmailExists = await isEmailExistsInCategory(categoryInput, email);
+  if (isEmailExists) {
+    alert(`"${email}" already exists in category: "${categoryInput}"`);
+    return;
+  }
+
+  const categoryEmails = await getCategoryEmails(categoryInput);
+  categoryEmails.push(email);
+
+  await setCategoryEmails(categoryInput, categoryEmails);
+  await renderPopup();
 }
 
 function getRecentImpersonationButtonElement(email) {
@@ -119,7 +196,7 @@ function getRecentImpersonationButtonElement(email) {
 
   const saveImpersonationElement = document.createElement('div');
   saveImpersonationElement.innerText = "Save";
-
+  saveImpersonationElement.classList.add("saveImpersonationBtn")
   saveImpersonationElement.onclick = (evt) => {
     evt.stopPropagation();
     onClickSaveRecentImpersonation(email);

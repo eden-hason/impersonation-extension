@@ -32,17 +32,38 @@
 
       .buttons-wrapper {
         display: flex;
+        justify-content: space-between;
       }
 
       .button-icon {
         margin-right: 4px;
       }
+
+      #categories {
+        margin-bottom: 10px;
+      }
+
+      #recent-impersonations-title {
+        text-align: center;
+        margin-bottom: 5px;
+        padding: 2px 0;
+        border-top: 1px solid black;
+        border-bottom: 1px solid black;
+      }
+
+      .saveImpersonationBtn:hover {
+        color: #0d6efd;
+      }
+
+      #options-button {margin-left: auto}
+
     </style>
   </head>
   <body>
-    <h6>Impersonation Pal</h6>
+    <h6 style="text-align: center">Impersonation Pal</h6>
     <div id="categories"></div>
     <div id="recent-impersonations">
+      <div id="recent-impersonations-title">Recent Impersonations</div>
       <p style="margin-bottom: 8px">
         The last emails used to impersonate, click on any option to re-impersonate
         again
